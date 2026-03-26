@@ -6,6 +6,7 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
+import Link from 'next/link';
 import { ArrowRight, Shield } from 'lucide-react';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { LanguageSwitcher } from '@/components/shared/language-switcher';
@@ -69,13 +70,13 @@ export function HeroSection() {
 
         {/* CTA 버튼 */}
         <div className="landing-fade-in landing-delay-3 mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <a
+          <Link
             href="/dashboard"
             className="group inline-flex items-center gap-2 rounded-xl bg-primary-600 px-8 py-4 text-base font-semibold text-white shadow-xl shadow-primary-500/25 transition-all duration-300 hover:bg-primary-500 hover:shadow-primary-500/40 hover:-translate-y-0.5"
           >
             {t('landing.ctaPrimary')}
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </a>
+          </Link>
           <a
             href="#features"
             className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/50 px-8 py-4 text-base font-medium text-slate-300 backdrop-blur-xs transition-all duration-300 hover:border-slate-600 hover:bg-slate-800 hover:text-white"

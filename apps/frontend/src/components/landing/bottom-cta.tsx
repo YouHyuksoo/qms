@@ -7,6 +7,7 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
+import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
 export function BottomCta() {
@@ -36,13 +37,13 @@ export function BottomCta() {
             </p>
 
             <div className="mt-10">
-              <a
+              <Link
                 href="/dashboard"
                 className="group inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-primary-600 to-primary-500 px-10 py-4 text-base font-semibold text-white shadow-xl shadow-primary-500/20 transition-all duration-300 hover:shadow-primary-500/40 hover:-translate-y-0.5"
               >
                 {t('landing.ctaPrimary')}
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </a>
+              </Link>
             </div>
           </div>
         </div>
