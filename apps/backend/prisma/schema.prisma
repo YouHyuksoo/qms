@@ -1,0 +1,1406 @@
+/**
+ * @file schema.prisma
+ * @description QMS(Quality Management System) 전체 Prisma 스키마 정의.
+ * 26개 테이블 + enum + 관계를 포함하며, Oracle 컬럼명을 @@map / @map 으로 매핑.
+ * 뷰 엔티티(ComplaintTrend, WarrantyPpm, FailurePattern)는 raw query 로 처리하므로 제외.
+ */
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ──────────────────────────────────────────────
+// Enums
+// ──────────────────────────────────────────────
+
+enum InspectionType {
+  INCOMING
+  IN_PROCESS
+  FINAL
+  PATROL
+  PERIODIC
+}
+
+enum InspectionJudgment {
+  PASS
+  FAIL
+  CONDITIONAL
+}
+
+enum InspectionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ResultJudgment {
+  PASS
+  FAIL
+  NA
+}
+
+enum NcrStatus {
+  DRAFT
+  OPEN
+  IN_PROGRESS
+  CLOSED
+  CANCELLED
+}
+
+enum DefectType {
+  DIMENSIONAL
+  VISUAL
+  FUNCTIONAL
+  MATERIAL
+  CONTAMINATION
+  OTHER
+}
+
+enum NcrSource {
+  INCOMING
+  IN_PROCESS
+  FINAL
+  CUSTOMER
+  FIELD
+}
+
+enum DispositionType {
+  USE_AS_IS
+  REWORK
+  REPAIR
+  SCRAP
+  RETURN_TO_SUPPLIER
+  SORT
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DEFERRED
+}
+
+enum ApqpProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+  CANCELLED
+}
+
+enum ApqpPhaseType {
+  PHASE1_PLANNING
+  PHASE2_DESIGN
+  PHASE3_PROCESS
+  PHASE4_VALIDATION
+  PHASE5_PRODUCTION
+}
+
+enum ApqpPhaseStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+}
+
+enum DeliverableStatus {
+  NOT_SUBMITTED
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum PpapDocumentType {
+  DESIGN_RECORD
+  ENGINEERING_CHANGE
+  CUSTOMER_APPROVAL
+  DFMEA
+  PROCESS_FLOW
+  PFMEA
+  CONTROL_PLAN
+  MSA
+  DIMENSIONAL
+  MATERIAL_TEST
+  PERFORMANCE_TEST
+  QUALIFIED_LAB
+  APPEARANCE_APPROVAL
+  SAMPLE_PRODUCT
+  MASTER_SAMPLE
+  CHECKING_AIDS
+  CUSTOMER_SPECIFIC
+  PSW
+}
+
+enum DocumentStatus {
+  NOT_SUBMITTED
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum PpapStatus {
+  NOT_SUBMITTED
+  SUBMITTED
+  APPROVED
+  REJECTED
+  INTERIM_APPROVED
+}
+
+enum ApprovalAction {
+  SUBMIT
+  APPROVE
+  REJECT
+  RESUBMIT
+  CANCEL
+}
+
+enum TestCategory {
+  DIMENSIONAL
+  MATERIAL
+  PERFORMANCE
+  RELIABILITY
+  ENVIRONMENTAL
+  SAFETY
+  EMC
+}
+
+enum TestResult {
+  NOT_TESTED
+  PASS
+  FAIL
+  CONDITIONAL
+}
+
+enum SampleInspectionResult {
+  PENDING
+  PASS
+  FAIL
+  CONDITIONAL
+}
+
+enum SampleStatus {
+  REGISTERED
+  INSPECTING
+  COMPLETED
+  APPROVED
+  REJECTED
+}
+
+enum ComplaintType {
+  QUALITY
+  DELIVERY
+  PACKAGING
+  DOCUMENTATION
+  SERVICE
+  OTHER
+}
+
+enum ComplaintSeverity {
+  CRITICAL
+  MAJOR
+  MINOR
+}
+
+enum ComplaintStatus {
+  RECEIVED
+  INVESTIGATING
+  RESOLVED
+  CLOSED
+  CANCELLED
+}
+
+enum WarrantyStatus {
+  ACTIVE
+  EXPIRED
+  CLAIMED
+  VOIDED
+}
+
+enum TraceabilityStatus {
+  UNTRACED
+  PARTIALLY_TRACED
+  FULLY_TRACED
+}
+
+enum RecallRiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum RecallStatus {
+  PLANNED
+  INITIATED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum RecallLotStatus {
+  IDENTIFIED
+  NOTIFIED
+  RETURNING
+  RETURNED
+  COMPLETED
+}
+
+enum CapaType {
+  CORRECTIVE
+  PREVENTIVE
+  BOTH
+}
+
+enum CapaPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum CapaStatus {
+  OPEN
+  IN_PROGRESS
+  VERIFICATION
+  CLOSED
+  CANCELLED
+}
+
+enum EffectivenessResult {
+  EFFECTIVE
+  PARTIALLY_EFFECTIVE
+  NOT_EFFECTIVE
+  PENDING
+}
+
+enum CertificateType {
+  COA
+  COC
+  COT
+  MILL_CERT
+}
+
+enum CertificateStatus {
+  DRAFT
+  ISSUED
+  REISSUED
+  CANCELLED
+}
+
+enum EquipmentStatus {
+  ACTIVE
+  INACTIVE
+  CALIBRATING
+  OUT_OF_SERVICE
+  DISPOSED
+}
+
+enum CalibrationType {
+  INTERNAL
+  EXTERNAL
+}
+
+enum CalibrationResult {
+  PASS
+  FAIL
+  ADJUSTED
+}
+
+enum TraceType {
+  FORWARD
+  BACKWARD
+  FULL
+}
+
+enum EvalGrade {
+  A
+  B
+  C
+  D
+  F
+}
+
+enum ScarStatus {
+  ISSUED
+  RESPONDED
+  VERIFIED
+  CLOSED
+  OVERDUE
+}
+
+enum CompetencyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum TrainingStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ChangeType {
+  DESIGN
+  PROCESS
+  MATERIAL
+  SUPPLIER
+  SPECIFICATION
+  OTHER
+}
+
+enum ChangeStatus {
+  DRAFT
+  SUBMITTED
+  REVIEWING
+  APPROVED
+  REJECTED
+  IMPLEMENTED
+  CLOSED
+}
+
+// ──────────────────────────────────────────────
+// Models
+// ──────────────────────────────────────────────
+
+/// 1. 검사 LOT
+model InspectionLot {
+  lotNo          String              @id @map("LOT_NO") @db.VarChar(50)
+  itemCode       String              @map("ITEM_CODE") @db.VarChar(50)
+  itemName       String?             @map("ITEM_NAME") @db.VarChar(200)
+  inspectionType InspectionType      @map("INSPECTION_TYPE")
+  inspectionDate DateTime?           @map("INSPECTION_DATE")
+  inspector      String?             @map("INSPECTOR") @db.VarChar(100)
+  lotQty         Int                 @default(0) @map("LOT_QTY")
+  sampleQty      Int                 @default(0) @map("SAMPLE_QTY")
+  judgment       InspectionJudgment? @map("JUDGMENT")
+  status         InspectionStatus    @default(PENDING) @map("STATUS")
+  supplierCode   String?             @map("SUPPLIER_CODE") @db.VarChar(50)
+  supplierName   String?             @map("SUPPLIER_NAME") @db.VarChar(200)
+  poNo           String?             @map("PO_NO") @db.VarChar(50)
+  workOrderNo    String?             @map("WORK_ORDER_NO") @db.VarChar(50)
+  remarks        String?             @map("REMARKS") @db.VarChar(2000)
+  ncrNo          String?             @map("NCR_NO") @db.VarChar(50)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  results InspectionResult[]
+
+  @@map("QMS_INSPECTION_LOT")
+}
+
+/// 2. 검사 결과
+model InspectionResult {
+  resultId            String          @id @default(uuid()) @map("RESULT_ID") @db.VarChar(50)
+  lotNo               String          @map("LOT_NO") @db.VarChar(50)
+  characteristicName  String          @map("CHARACTERISTIC_NAME") @db.VarChar(200)
+  characteristicNo    String?         @map("CHARACTERISTIC_NO") @db.VarChar(50)
+  specMin             Decimal?        @map("SPEC_MIN") @db.Decimal(18, 6)
+  specMax             Decimal?        @map("SPEC_MAX") @db.Decimal(18, 6)
+  specText            String?         @map("SPEC_TEXT") @db.VarChar(500)
+  measuredValue       Decimal?        @map("MEASURED_VALUE") @db.Decimal(18, 6)
+  measuredText        String?         @map("MEASURED_TEXT") @db.VarChar(500)
+  judgment            ResultJudgment? @map("JUDGMENT")
+  inspectionMethod    String?         @map("INSPECTION_METHOD") @db.VarChar(200)
+  inspectionEquipment String?         @map("INSPECTION_EQUIPMENT") @db.VarChar(200)
+  remarks             String?         @map("REMARKS") @db.VarChar(2000)
+  sequenceNo          Int             @default(1) @map("SEQUENCE_NO")
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  lot InspectionLot @relation(fields: [lotNo], references: [lotNo], onDelete: Cascade)
+
+  @@map("QMS_INSPECTION_RESULT")
+}
+
+/// 3. 부적합 보고서 (NCR)
+model Ncr {
+  ncrNo            String      @id @map("NCR_NO") @db.VarChar(50)
+  title            String      @map("TITLE") @db.VarChar(500)
+  description      String?     @map("DESCRIPTION") @db.VarChar(4000)
+  occurrenceDate   DateTime?   @map("OCCURRENCE_DATE")
+  lotNo            String?     @map("LOT_NO") @db.VarChar(50)
+  itemCode         String?     @map("ITEM_CODE") @db.VarChar(50)
+  itemName         String?     @map("ITEM_NAME") @db.VarChar(200)
+  defectQty        Int         @default(0) @map("DEFECT_QTY")
+  defectType       DefectType? @map("DEFECT_TYPE")
+  status           NcrStatus   @default(DRAFT) @map("STATUS")
+  source           NcrSource?  @map("SOURCE")
+  reportedBy       String?     @map("REPORTED_BY") @db.VarChar(100)
+  reportedDate     DateTime?   @map("REPORTED_DATE")
+  assignedTo       String?     @map("ASSIGNED_TO") @db.VarChar(100)
+  dueDate          DateTime?   @map("DUE_DATE")
+  rootCause        String?     @map("ROOT_CAUSE") @db.VarChar(4000)
+  correctiveAction String?     @map("CORRECTIVE_ACTION") @db.VarChar(4000)
+  preventiveAction String?     @map("PREVENTIVE_ACTION") @db.VarChar(4000)
+  closedDate       DateTime?   @map("CLOSED_DATE")
+  closedBy         String?     @map("CLOSED_BY") @db.VarChar(100)
+  remarks          String?     @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  mrbReviews MrbReview[]
+
+  @@map("QMS_NCR")
+}
+
+/// 4. MRB 검토
+model MrbReview {
+  reviewId        String           @id @default(uuid()) @map("REVIEW_ID") @db.VarChar(50)
+  ncrNo           String           @map("NCR_NO") @db.VarChar(50)
+  reviewedBy      String           @map("REVIEWED_BY") @db.VarChar(100)
+  reviewDate      DateTime         @map("REVIEW_DATE")
+  disposition     DispositionType? @map("DISPOSITION")
+  reason          String?          @map("REASON") @db.VarChar(4000)
+  approvedBy      String?          @map("APPROVED_BY") @db.VarChar(100)
+  approvedDate    DateTime?        @map("APPROVED_DATE")
+  status          ReviewStatus     @default(PENDING) @map("STATUS")
+  executionDate   DateTime?        @map("EXECUTION_DATE")
+  executionResult String?          @map("EXECUTION_RESULT") @db.VarChar(2000)
+  executedBy      String?          @map("EXECUTED_BY") @db.VarChar(100)
+  attachments     String?          @map("ATTACHMENTS") @db.VarChar(4000)
+  remarks         String?          @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  ncr Ncr @relation(fields: [ncrNo], references: [ncrNo], onDelete: Cascade)
+
+  @@map("QMS_MRB_REVIEW")
+}
+
+/// 5. APQP 프로젝트
+model ApqpProject {
+  projectNo          String            @id @map("PROJECT_NO") @db.VarChar(50)
+  projectName        String            @map("PROJECT_NAME") @db.VarChar(200)
+  customerCode       String?           @map("CUSTOMER_CODE") @db.VarChar(50)
+  customerName       String?           @map("CUSTOMER_NAME") @db.VarChar(200)
+  itemCode           String?           @map("ITEM_CODE") @db.VarChar(50)
+  itemName           String?           @map("ITEM_NAME") @db.VarChar(200)
+  plannedStartDate   DateTime?         @map("PLANNED_START_DATE")
+  plannedEndDate     DateTime?         @map("PLANNED_END_DATE")
+  actualStartDate    DateTime?         @map("ACTUAL_START_DATE")
+  actualEndDate      DateTime?         @map("ACTUAL_END_DATE")
+  projectManager     String?           @map("PROJECT_MANAGER") @db.VarChar(100)
+  status             ApqpProjectStatus @default(PLANNING) @map("STATUS")
+  targetQualityLevel Decimal?          @default(99.0) @map("TARGET_QUALITY_LEVEL") @db.Decimal(5, 2)
+  actualQualityLevel Decimal?          @map("ACTUAL_QUALITY_LEVEL") @db.Decimal(5, 2)
+  remarks            String?           @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  phases ApqpPhase[]
+
+  @@map("QMS_APQP_PROJECT")
+}
+
+/// 6. APQP 단계
+model ApqpPhase {
+  phaseId            String          @id @default(uuid()) @map("PHASE_ID") @db.VarChar(50)
+  projectNo          String          @map("PROJECT_NO") @db.VarChar(50)
+  phaseType          ApqpPhaseType   @map("PHASE_TYPE")
+  phaseName          String          @map("PHASE_NAME") @db.VarChar(200)
+  sequenceNo         Int             @default(1) @map("SEQUENCE_NO")
+  plannedStartDate   DateTime?       @map("PLANNED_START_DATE")
+  plannedEndDate     DateTime?       @map("PLANNED_END_DATE")
+  actualStartDate    DateTime?       @map("ACTUAL_START_DATE")
+  actualEndDate      DateTime?       @map("ACTUAL_END_DATE")
+  targetQualityLevel Decimal?        @map("TARGET_QUALITY_LEVEL") @db.Decimal(5, 2)
+  actualQualityLevel Decimal?        @map("ACTUAL_QUALITY_LEVEL") @db.Decimal(5, 2)
+  status             ApqpPhaseStatus @default(NOT_STARTED) @map("STATUS")
+  approvedBy         String?         @map("APPROVED_BY") @db.VarChar(100)
+  approvedDate       DateTime?       @map("APPROVED_DATE")
+  rejectionReason    String?         @map("REJECTION_REASON") @db.VarChar(2000)
+  remarks            String?         @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  project      ApqpProject       @relation(fields: [projectNo], references: [projectNo], onDelete: Cascade)
+  deliverables GateDeliverable[]
+
+  @@map("QMS_APQP_PHASE")
+}
+
+/// 7. Gate 산출물
+model GateDeliverable {
+  deliverableId   String            @id @default(uuid()) @map("DELIVERABLE_ID") @db.VarChar(50)
+  phaseId         String            @map("PHASE_ID") @db.VarChar(50)
+  deliverableName String            @map("DELIVERABLE_NAME") @db.VarChar(200)
+  deliverableCode String?           @map("DELIVERABLE_CODE") @db.VarChar(50)
+  isRequired      Boolean           @default(true) @map("IS_REQUIRED")
+  isSubmitted     Boolean           @default(false) @map("IS_SUBMITTED")
+  submittedDate   DateTime?         @map("SUBMITTED_DATE")
+  submittedBy     String?           @map("SUBMITTED_BY") @db.VarChar(100)
+  status          DeliverableStatus @default(NOT_SUBMITTED) @map("STATUS")
+  approvedDate    DateTime?         @map("APPROVED_DATE")
+  approvedBy      String?           @map("APPROVED_BY") @db.VarChar(100)
+  documentPath    String?           @map("DOCUMENT_PATH") @db.VarChar(500)
+  remarks         String?           @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  phase ApqpPhase @relation(fields: [phaseId], references: [phaseId], onDelete: Cascade)
+
+  @@map("QMS_GATE_DELIVERABLE")
+}
+
+/// 8. PPAP 제출
+model PpapSubmission {
+  submissionId      String     @id @default(uuid()) @map("SUBMISSION_ID") @db.VarChar(50)
+  projectNo         String     @map("PROJECT_NO") @db.VarChar(50)
+  submissionNo      String     @map("SUBMISSION_NO") @db.VarChar(50)
+  submissionLevel   Int        @default(3) @map("SUBMISSION_LEVEL")
+  submissionDate    DateTime?  @map("SUBMISSION_DATE")
+  customerCode      String?    @map("CUSTOMER_CODE") @db.VarChar(50)
+  customerName      String?    @map("CUSTOMER_NAME") @db.VarChar(200)
+  status            PpapStatus @default(NOT_SUBMITTED) @map("STATUS")
+  pswNo             String?    @map("PSW_NO") @db.VarChar(50)
+  pswPath           String?    @map("PSW_PATH") @db.VarChar(500)
+  reviewedBy        String?    @map("REVIEWED_BY") @db.VarChar(100)
+  reviewDate        DateTime?  @map("REVIEW_DATE")
+  rejectionReason   String?    @map("REJECTION_REASON") @db.VarChar(2000)
+  resubmissionDate  DateTime?  @map("RESUBMISSION_DATE")
+  resubmissionCount Int        @default(0) @map("RESUBMISSION_COUNT")
+  approvalDeadline  DateTime?  @map("APPROVAL_DEADLINE")
+  remarks           String?    @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  documents       PpapDocument[]
+  approvalHistory PpapApprovalHistory[]
+
+  @@map("QMS_PPAP_SUBMISSION")
+}
+
+/// 9. PPAP 문서
+model PpapDocument {
+  documentId    String           @id @default(uuid()) @map("DOCUMENT_ID") @db.VarChar(50)
+  submissionId  String           @map("SUBMISSION_ID") @db.VarChar(50)
+  documentType  PpapDocumentType @map("DOCUMENT_TYPE")
+  documentName  String           @map("DOCUMENT_NAME") @db.VarChar(200)
+  documentCode  String?          @map("DOCUMENT_CODE") @db.VarChar(50)
+  isRequired    Boolean          @default(true) @map("IS_REQUIRED")
+  isSubmitted   Boolean          @default(false) @map("IS_SUBMITTED")
+  submittedDate DateTime?        @map("SUBMITTED_DATE")
+  status        DocumentStatus   @default(NOT_SUBMITTED) @map("STATUS")
+  documentPath  String?          @map("DOCUMENT_PATH") @db.VarChar(500)
+  version       String?          @map("VERSION") @db.VarChar(20)
+  reviewedBy    String?          @map("REVIEWED_BY") @db.VarChar(100)
+  reviewDate    DateTime?        @map("REVIEW_DATE")
+  remarks       String?          @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  submission PpapSubmission @relation(fields: [submissionId], references: [submissionId], onDelete: Cascade)
+
+  @@map("QMS_PPAP_DOCUMENT")
+}
+
+/// 10. PPAP 승인 이력
+model PpapApprovalHistory {
+  historyId      String         @id @default(uuid()) @map("HISTORY_ID") @db.VarChar(50)
+  submissionId   String         @map("SUBMISSION_ID") @db.VarChar(50)
+  action         ApprovalAction @map("ACTION")
+  actionDate     DateTime       @map("ACTION_DATE")
+  actionBy       String         @map("ACTION_BY") @db.VarChar(100)
+  reason         String?        @map("REASON") @db.VarChar(2000)
+  previousStatus String?        @map("PREVIOUS_STATUS") @db.VarChar(50)
+  newStatus      String         @map("NEW_STATUS") @db.VarChar(50)
+  remarks        String?        @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  submission PpapSubmission @relation(fields: [submissionId], references: [submissionId], onDelete: Cascade)
+
+  @@map("QMS_PPAP_APPROVAL_HISTORY")
+}
+
+/// 11. DVP 계획
+model DvpPlan {
+  planId             String       @id @default(uuid()) @map("PLAN_ID") @db.VarChar(50)
+  projectNo          String       @map("PROJECT_NO") @db.VarChar(50)
+  itemCode           String?      @map("ITEM_CODE") @db.VarChar(50)
+  itemName           String?      @map("ITEM_NAME") @db.VarChar(200)
+  testCategory       TestCategory @map("TEST_CATEGORY")
+  testItem           String       @map("TEST_ITEM") @db.VarChar(200)
+  testMethod         String?      @map("TEST_METHOD") @db.VarChar(200)
+  acceptanceCriteria String?      @map("ACCEPTANCE_CRITERIA") @db.VarChar(500)
+  testFacility       String?      @map("TEST_FACILITY") @db.VarChar(200)
+  testEquipment      String?      @map("TEST_EQUIPMENT") @db.VarChar(200)
+  plannedStartDate   DateTime?    @map("PLANNED_START_DATE")
+  plannedEndDate     DateTime?    @map("PLANNED_END_DATE")
+  sampleQty          Int?         @default(5) @map("SAMPLE_QTY")
+  responsiblePerson  String?      @map("RESPONSIBLE_PERSON") @db.VarChar(100)
+  referenceSpec      String?      @map("REFERENCE_SPEC") @db.VarChar(200)
+  priority           Int?         @default(1) @map("PRIORITY")
+  remarks            String?      @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  results DvpResult[]
+
+  @@map("QMS_DVP_PLAN")
+}
+
+/// 12. DVP 결과
+model DvpResult {
+  resultId          String     @id @default(uuid()) @map("RESULT_ID") @db.VarChar(50)
+  planId            String     @map("PLAN_ID") @db.VarChar(50)
+  actualStartDate   DateTime?  @map("ACTUAL_START_DATE")
+  actualEndDate     DateTime?  @map("ACTUAL_END_DATE")
+  testedQty         Int?       @default(0) @map("TESTED_QTY")
+  passedQty         Int?       @default(0) @map("PASSED_QTY")
+  failedQty         Int?       @default(0) @map("FAILED_QTY")
+  testResult        TestResult @default(NOT_TESTED) @map("TEST_RESULT")
+  testReportNo      String?    @map("TEST_REPORT_NO") @db.VarChar(50)
+  testReportPath    String?    @map("TEST_REPORT_PATH") @db.VarChar(500)
+  testedBy          String?    @map("TESTED_BY") @db.VarChar(100)
+  measuredValues    String?    @map("MEASURED_VALUES") @db.VarChar(4000)
+  defectDescription String?    @map("DEFECT_DESCRIPTION") @db.VarChar(2000)
+  correctiveAction  String?    @map("CORRECTIVE_ACTION") @db.VarChar(2000)
+  remarks           String?    @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  plan DvpPlan @relation(fields: [planId], references: [planId], onDelete: Cascade)
+
+  @@map("QMS_DVP_RESULT")
+}
+
+/// 13. 초도품 검사
+model InitialSample {
+  sampleId            String                 @id @default(uuid()) @map("SAMPLE_ID") @db.VarChar(50)
+  projectNo           String                 @map("PROJECT_NO") @db.VarChar(50)
+  sampleNo            String                 @map("SAMPLE_NO") @db.VarChar(50)
+  itemCode            String                 @map("ITEM_CODE") @db.VarChar(50)
+  itemName            String?                @map("ITEM_NAME") @db.VarChar(200)
+  sampleQty           Int                    @default(1) @map("SAMPLE_QTY")
+  submissionDate      DateTime               @map("SUBMISSION_DATE")
+  inspector           String?                @map("INSPECTOR") @db.VarChar(100)
+  inspectionResult    SampleInspectionResult @default(PENDING) @map("INSPECTION_RESULT")
+  status              SampleStatus           @default(REGISTERED) @map("STATUS")
+  inspectionDate      DateTime?              @map("INSPECTION_DATE")
+  approvalDate        DateTime?              @map("APPROVAL_DATE")
+  approvedBy          String?                @map("APPROVED_BY") @db.VarChar(100)
+  rejectionReason     String?                @map("REJECTION_REASON") @db.VarChar(2000)
+  dimensionalReportNo String?                @map("DIMENSIONAL_REPORT_NO") @db.VarChar(50)
+  materialReportNo    String?                @map("MATERIAL_REPORT_NO") @db.VarChar(50)
+  performanceReportNo String?                @map("PERFORMANCE_REPORT_NO") @db.VarChar(50)
+  remarks             String?                @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  inspectionItems SampleInspectionItem[]
+
+  @@map("QMS_INITIAL_SAMPLE")
+}
+
+/// 14. 초도품 검사 항목
+model SampleInspectionItem {
+  itemId              String                 @id @default(uuid()) @map("ITEM_ID") @db.VarChar(50)
+  sampleId            String                 @map("SAMPLE_ID") @db.VarChar(50)
+  inspectionItem      String                 @map("INSPECTION_ITEM") @db.VarChar(200)
+  inspectionItemCode  String?                @map("INSPECTION_ITEM_CODE") @db.VarChar(50)
+  specMin             Decimal?               @map("SPEC_MIN") @db.Decimal(18, 6)
+  specMax             Decimal?               @map("SPEC_MAX") @db.Decimal(18, 6)
+  specNominal         Decimal?               @map("SPEC_NOMINAL") @db.Decimal(18, 6)
+  specTolerance       Decimal?               @map("SPEC_TOLERANCE") @db.Decimal(18, 6)
+  unit                String?                @map("UNIT") @db.VarChar(20)
+  measuredValue       Decimal?               @map("MEASURED_VALUE") @db.Decimal(18, 6)
+  measuredValues      String?                @map("MEASURED_VALUES") @db.VarChar(4000)
+  judgment            SampleInspectionResult @default(PENDING) @map("JUDGMENT")
+  isCritical          Boolean                @default(false) @map("IS_CRITICAL")
+  inspectionMethod    String?                @map("INSPECTION_METHOD") @db.VarChar(200)
+  inspectionEquipment String?                @map("INSPECTION_EQUIPMENT") @db.VarChar(200)
+  remarks             String?                @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  sample InitialSample @relation(fields: [sampleId], references: [sampleId], onDelete: Cascade)
+
+  @@map("QMS_SAMPLE_INSPECTION_ITEM")
+}
+
+/// 15. 고객 클레임
+model CustomerComplaint {
+  complaintId       String             @id @default(uuid()) @map("COMPLAINT_ID") @db.VarChar(50)
+  complaintNo       String             @unique @map("COMPLAINT_NO") @db.VarChar(50)
+  customerCode      String             @map("CUSTOMER_CODE") @db.VarChar(50)
+  customerName      String?            @map("CUSTOMER_NAME") @db.VarChar(200)
+  itemCode          String?            @map("ITEM_CODE") @db.VarChar(50)
+  itemName          String?            @map("ITEM_NAME") @db.VarChar(200)
+  occurrenceDate    DateTime?          @map("OCCURRENCE_DATE")
+  receiptDate       DateTime           @map("RECEIPT_DATE")
+  complaintType     ComplaintType      @default(QUALITY) @map("COMPLAINT_TYPE")
+  severity          ComplaintSeverity? @map("SEVERITY")
+  description       String             @map("DESCRIPTION") @db.VarChar(4000)
+  defectQty         Int                @default(0) @map("DEFECT_QTY")
+  lotNo             String?            @map("LOT_NO") @db.VarChar(50)
+  status            ComplaintStatus    @default(RECEIVED) @map("STATUS")
+  resolution        String?            @map("RESOLUTION") @db.VarChar(4000)
+  resolvedDate      DateTime?          @map("RESOLVED_DATE")
+  resolvedBy        String?            @map("RESOLVED_BY") @db.VarChar(100)
+  responseTimeHours Int?               @map("RESPONSE_TIME_HOURS")
+  satisfactionScore Int?               @map("SATISFACTION_SCORE")
+  reportedBy        String?            @map("REPORTED_BY") @db.VarChar(100)
+  assignedTo        String?            @map("ASSIGNED_TO") @db.VarChar(100)
+  closedDate        DateTime?          @map("CLOSED_DATE")
+  closedBy          String?            @map("CLOSED_BY") @db.VarChar(100)
+  remarks           String?            @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_CUSTOMER_COMPLAINT")
+}
+
+/// 16. 보증 기록
+model WarrantyRecord {
+  warrantyId           String         @id @default(uuid()) @map("WARRANTY_ID") @db.VarChar(50)
+  warrantyNo           String         @unique @map("WARRANTY_NO") @db.VarChar(50)
+  itemCode             String         @map("ITEM_CODE") @db.VarChar(50)
+  itemName             String?        @map("ITEM_NAME") @db.VarChar(200)
+  serialNo             String?        @map("SERIAL_NO") @db.VarChar(100)
+  saleDate             DateTime       @map("SALE_DATE")
+  warrantyPeriodMonths Int            @default(12) @map("WARRANTY_PERIOD_MONTHS")
+  warrantyExpiryDate   DateTime       @map("WARRANTY_EXPIRY_DATE")
+  customerCode         String         @map("CUSTOMER_CODE") @db.VarChar(50)
+  customerName         String?        @map("CUSTOMER_NAME") @db.VarChar(200)
+  salesOrderNo         String?        @map("SALES_ORDER_NO") @db.VarChar(50)
+  invoiceNo            String?        @map("INVOICE_NO") @db.VarChar(50)
+  status               WarrantyStatus @default(ACTIVE) @map("STATUS")
+  claimDate            DateTime?      @map("CLAIM_DATE")
+  failureDate          DateTime?      @map("FAILURE_DATE")
+  failureDescription   String?        @map("FAILURE_DESCRIPTION") @db.VarChar(4000)
+  failurePart          String?        @map("FAILURE_PART") @db.VarChar(200)
+  failureCause         String?        @map("FAILURE_CAUSE") @db.VarChar(2000)
+  repairCost           Decimal?       @map("REPAIR_COST") @db.Decimal(18, 2)
+  replacementCost      Decimal?       @map("REPLACEMENT_COST") @db.Decimal(18, 2)
+  laborCost            Decimal?       @map("LABOR_COST") @db.Decimal(18, 2)
+  shippingCost         Decimal?       @map("SHIPPING_COST") @db.Decimal(18, 2)
+  totalCost            Decimal?       @map("TOTAL_COST") @db.Decimal(18, 2)
+  claimApprovedBy      String?        @map("CLAIM_APPROVED_BY") @db.VarChar(100)
+  claimApprovedDate    DateTime?      @map("CLAIM_APPROVED_DATE")
+  remarks              String?        @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_WARRANTY_RECORD")
+}
+
+/// 17. 필드 고장
+model FieldFailure {
+  failureId           String             @id @default(uuid()) @map("FAILURE_ID") @db.VarChar(50)
+  failureNo           String             @unique @map("FAILURE_NO") @db.VarChar(50)
+  complaintId         String?            @map("COMPLAINT_ID") @db.VarChar(50)
+  warrantyId          String?            @map("WARRANTY_ID") @db.VarChar(50)
+  itemCode            String             @map("ITEM_CODE") @db.VarChar(50)
+  itemName            String?            @map("ITEM_NAME") @db.VarChar(200)
+  lotNo               String?            @map("LOT_NO") @db.VarChar(50)
+  serialNo            String?            @map("SERIAL_NO") @db.VarChar(100)
+  failureDate         DateTime           @map("FAILURE_DATE")
+  discoveryDate       DateTime?          @map("DISCOVERY_DATE")
+  failureMode         String             @map("FAILURE_MODE") @db.VarChar(500)
+  failureCause        String?            @map("FAILURE_CAUSE") @db.VarChar(2000)
+  failureDetail       String?            @map("FAILURE_DETAIL") @db.VarChar(4000)
+  productionDate      DateTime?          @map("PRODUCTION_DATE")
+  productionLine      String?            @map("PRODUCTION_LINE") @db.VarChar(50)
+  equipmentId         String?            @map("EQUIPMENT_ID") @db.VarChar(50)
+  equipmentName       String?            @map("EQUIPMENT_NAME") @db.VarChar(200)
+  operatorId          String?            @map("OPERATOR_ID") @db.VarChar(50)
+  operatorName        String?            @map("OPERATOR_NAME") @db.VarChar(100)
+  inspectionLotNo     String?            @map("INSPECTION_LOT_NO") @db.VarChar(50)
+  rawMaterialLot      String?            @map("RAW_MATERIAL_LOT") @db.VarChar(50)
+  supplierCode        String?            @map("SUPPLIER_CODE") @db.VarChar(50)
+  supplierName        String?            @map("SUPPLIER_NAME") @db.VarChar(200)
+  traceabilityStatus  TraceabilityStatus @default(UNTRACED) @map("TRACEABILITY_STATUS")
+  immediateAction     String?            @map("IMMEDIATE_ACTION") @db.VarChar(2000)
+  correctiveAction    String?            @map("CORRECTIVE_ACTION") @db.VarChar(2000)
+  preventiveAction    String?            @map("PREVENTIVE_ACTION") @db.VarChar(2000)
+  actionDeadline      DateTime?          @map("ACTION_DEADLINE")
+  actionCompletedDate DateTime?          @map("ACTION_COMPLETED_DATE")
+  actionCompletedBy   String?            @map("ACTION_COMPLETED_BY") @db.VarChar(100)
+  verificationResult  String?            @map("VERIFICATION_RESULT") @db.VarChar(2000)
+  verificationDate    DateTime?          @map("VERIFICATION_DATE")
+  remarks             String?            @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_FIELD_FAILURE")
+}
+
+/// 18. 리콜 캠페인
+model RecallCampaign {
+  recallId             String          @id @default(uuid()) @map("RECALL_ID") @db.VarChar(50)
+  recallNo             String          @unique @map("RECALL_NO") @db.VarChar(50)
+  recallName           String          @map("RECALL_NAME") @db.VarChar(200)
+  itemCode             String          @map("ITEM_CODE") @db.VarChar(50)
+  itemName             String?         @map("ITEM_NAME") @db.VarChar(200)
+  affectedLots         String?         @map("AFFECTED_LOTS") @db.VarChar(4000)
+  affectedQty          Int             @default(0) @map("AFFECTED_QTY")
+  reason               String          @map("REASON") @db.VarChar(2000)
+  riskLevel            RecallRiskLevel @default(MEDIUM) @map("RISK_LEVEL")
+  startDate            DateTime        @map("START_DATE")
+  targetCompletionDate DateTime        @map("TARGET_COMPLETION_DATE")
+  actualCompletionDate DateTime?       @map("ACTUAL_COMPLETION_DATE")
+  completionRate       Decimal?        @default(0) @map("COMPLETION_RATE") @db.Decimal(5, 2)
+  targetQty            Int             @default(0) @map("TARGET_QTY")
+  completedQty         Int             @default(0) @map("COMPLETED_QTY")
+  estimatedCost        Decimal?        @default(0) @map("ESTIMATED_COST") @db.Decimal(18, 2)
+  actualCost           Decimal?        @default(0) @map("ACTUAL_COST") @db.Decimal(18, 2)
+  totalCost            Decimal?        @default(0) @map("TOTAL_COST") @db.Decimal(18, 2)
+  status               RecallStatus    @default(PLANNED) @map("STATUS")
+  notificationSent     Boolean         @default(false) @map("NOTIFICATION_SENT")
+  notificationDate     DateTime?       @map("NOTIFICATION_DATE")
+  regulatoryReported   Boolean         @default(false) @map("REGULATORY_REPORTED")
+  regulatoryReportDate DateTime?       @map("REGULATORY_REPORT_DATE")
+  remarks              String?         @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  recallLots RecallLot[]
+
+  @@map("QMS_RECALL_CAMPAIGN")
+}
+
+/// 19. 리콜 LOT
+model RecallLot {
+  recallLotId   String          @id @default(uuid()) @map("RECALL_LOT_ID") @db.VarChar(50)
+  recallId      String          @map("RECALL_ID") @db.VarChar(50)
+  lotNo         String          @map("LOT_NO") @db.VarChar(50)
+  qty           Int             @default(0) @map("QTY")
+  customerCode  String?         @map("CUSTOMER_CODE") @db.VarChar(50)
+  customerName  String?         @map("CUSTOMER_NAME") @db.VarChar(200)
+  shipmentDate  DateTime?       @map("SHIPMENT_DATE")
+  status        RecallLotStatus @default(IDENTIFIED) @map("STATUS")
+  returnQty     Int?            @map("RETURN_QTY")
+  cost          Decimal?        @map("COST") @db.Decimal(18, 2)
+  completedDate DateTime?       @map("COMPLETED_DATE")
+  remarks       String?         @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  recall RecallCampaign @relation(fields: [recallId], references: [recallId], onDelete: Cascade)
+
+  @@map("QMS_RECALL_LOT")
+}
+
+/// 20. CAPA (시정/예방 조치)
+model Capa {
+  capaId                 String       @id @default(uuid()) @map("CAPA_ID") @db.VarChar(50)
+  capaNo                 String       @unique @map("CAPA_NO") @db.VarChar(50)
+  capaType               CapaType     @map("CAPA_TYPE")
+  sourceType             String       @map("SOURCE_TYPE") @db.VarChar(50)
+  sourceId               String?      @map("SOURCE_ID") @db.VarChar(50)
+  title                  String       @map("TITLE") @db.VarChar(500)
+  description            String       @map("DESCRIPTION") @db.VarChar(4000)
+  priority               CapaPriority @default(MEDIUM) @map("PRIORITY")
+  status                 CapaStatus   @default(OPEN) @map("STATUS")
+  requestedBy            String       @map("REQUESTED_BY") @db.VarChar(100)
+  assignedTo             String?      @map("ASSIGNED_TO") @db.VarChar(100)
+  dueDate                DateTime     @map("DUE_DATE")
+  rootCause              String?      @map("ROOT_CAUSE") @db.VarChar(4000)
+  rootCauseMethod        String?      @map("ROOT_CAUSE_METHOD") @db.VarChar(200)
+  correctiveAction       String?      @map("CORRECTIVE_ACTION") @db.VarChar(4000)
+  preventiveAction       String?      @map("PREVENTIVE_ACTION") @db.VarChar(4000)
+  actionCompletedDate    DateTime?    @map("ACTION_COMPLETED_DATE")
+  verificationDueDate    DateTime?    @map("VERIFICATION_DUE_DATE")
+  verificationResult     String?      @map("VERIFICATION_RESULT") @db.VarChar(2000)
+  verificationDate       DateTime?    @map("VERIFICATION_DATE")
+  verifiedBy             String?      @map("VERIFIED_BY") @db.VarChar(100)
+  effectivenessConfirmed Boolean      @default(false) @map("EFFECTIVENESS_CONFIRMED")
+  relatedDocuments       String?      @map("RELATED_DOCUMENTS") @db.VarChar(4000)
+  remarks                String?      @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  effectivenessChecks EffectivenessCheck[]
+
+  @@map("QMS_CAPA")
+}
+
+/// 21. 유효성 점검
+model EffectivenessCheck {
+  checkId         String               @id @default(uuid()) @map("CHECK_ID") @db.VarChar(50)
+  capaId          String               @map("CAPA_ID") @db.VarChar(50)
+  checkNo         Int                  @map("CHECK_NO")
+  scheduledDate   DateTime             @map("SCHEDULED_DATE")
+  actualDate      DateTime?            @map("ACTUAL_DATE")
+  checkedBy       String?              @map("CHECKED_BY") @db.VarChar(100)
+  result          EffectivenessResult? @map("RESULT")
+  evidence        String?              @map("EVIDENCE") @db.VarChar(4000)
+  recurrenceFound Boolean              @default(false) @map("RECURRENCE_FOUND")
+  remarks         String?              @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  capa Capa @relation(fields: [capaId], references: [capaId], onDelete: Cascade)
+
+  @@map("QMS_EFFECTIVENESS_CHECK")
+}
+
+/// 22. 검사 성적서
+model InspectionCertificate {
+  certificateId     String            @id @default(uuid()) @map("CERTIFICATE_ID") @db.VarChar(50)
+  certificateNo     String            @unique @map("CERTIFICATE_NO") @db.VarChar(50)
+  certificateType   CertificateType   @default(COA) @map("CERTIFICATE_TYPE")
+  inspectionLotNo   String            @map("INSPECTION_LOT_NO") @db.VarChar(50)
+  itemCode          String            @map("ITEM_CODE") @db.VarChar(50)
+  itemName          String?           @map("ITEM_NAME") @db.VarChar(200)
+  customerCode      String?           @map("CUSTOMER_CODE") @db.VarChar(50)
+  customerName      String?           @map("CUSTOMER_NAME") @db.VarChar(200)
+  lotNo             String?           @map("LOT_NO") @db.VarChar(50)
+  lotQty            Int?              @map("LOT_QTY")
+  inspectionDate    DateTime          @map("INSPECTION_DATE")
+  issueDate         DateTime          @map("ISSUE_DATE")
+  issuedBy          String            @map("ISSUED_BY") @db.VarChar(100)
+  status            CertificateStatus @default(DRAFT) @map("STATUS")
+  templateId        String?           @map("TEMPLATE_ID") @db.VarChar(50)
+  version           Int               @default(1) @map("VERSION")
+  reissueReason     String?           @map("REISSUE_REASON") @db.VarChar(2000)
+  inspectionSummary String?           @map("INSPECTION_SUMMARY") @db.VarChar(4000)
+  remarks           String?           @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_INSPECTION_CERTIFICATE")
+}
+
+/// 23. 성적서 템플릿
+model CertificateTemplate {
+  templateId   String          @id @default(uuid()) @map("TEMPLATE_ID") @db.VarChar(50)
+  templateName String          @map("TEMPLATE_NAME") @db.VarChar(200)
+  templateType CertificateType @default(COA) @map("TEMPLATE_TYPE")
+  customerCode String?         @map("CUSTOMER_CODE") @db.VarChar(50)
+  description  String?         @map("DESCRIPTION") @db.VarChar(2000)
+  headerFields String?         @map("HEADER_FIELDS") @db.VarChar(4000)
+  bodyFields   String?         @map("BODY_FIELDS") @db.VarChar(4000)
+  footerFields String?         @map("FOOTER_FIELDS") @db.VarChar(4000)
+  isDefault    Boolean         @default(false) @map("IS_DEFAULT")
+  isActive     Boolean         @default(true) @map("IS_ACTIVE")
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_CERTIFICATE_TEMPLATE")
+}
+
+/// 24. 설비/계측기
+model Equipment {
+  equipmentId         String          @id @default(uuid()) @map("EQUIPMENT_ID") @db.VarChar(50)
+  equipmentNo         String          @unique @map("EQUIPMENT_NO") @db.VarChar(50)
+  equipmentName       String          @map("EQUIPMENT_NAME") @db.VarChar(200)
+  equipmentType       String          @map("EQUIPMENT_TYPE") @db.VarChar(100)
+  manufacturer        String?         @map("MANUFACTURER") @db.VarChar(200)
+  modelNo             String?         @map("MODEL_NO") @db.VarChar(100)
+  serialNo            String?         @map("SERIAL_NO") @db.VarChar(100)
+  specification       String?         @map("SPECIFICATION") @db.VarChar(500)
+  location            String?         @map("LOCATION") @db.VarChar(200)
+  department          String?         @map("DEPARTMENT") @db.VarChar(100)
+  status              EquipmentStatus @default(ACTIVE) @map("STATUS")
+  purchaseDate        DateTime?       @map("PURCHASE_DATE")
+  calibrationCycle    Int?            @map("CALIBRATION_CYCLE")
+  lastCalibrationDate DateTime?       @map("LAST_CALIBRATION_DATE")
+  nextCalibrationDate DateTime?       @map("NEXT_CALIBRATION_DATE")
+  calibrationLabName  String?         @map("CALIBRATION_LAB_NAME") @db.VarChar(200)
+  calibrationLabCert  String?         @map("CALIBRATION_LAB_CERT") @db.VarChar(100)
+  remarks             String?         @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  calibrations Calibration[]
+
+  @@map("QMS_EQUIPMENT")
+}
+
+/// 25. 교정 이력
+model Calibration {
+  calibrationId       String            @id @default(uuid()) @map("CALIBRATION_ID") @db.VarChar(50)
+  equipmentId         String            @map("EQUIPMENT_ID") @db.VarChar(50)
+  calibrationNo       String            @unique @map("CALIBRATION_NO") @db.VarChar(50)
+  calibrationType     CalibrationType   @default(EXTERNAL) @map("CALIBRATION_TYPE")
+  calibrationDate     DateTime          @map("CALIBRATION_DATE")
+  calibratedBy        String?           @map("CALIBRATED_BY") @db.VarChar(100)
+  externalLabName     String?           @map("EXTERNAL_LAB_NAME") @db.VarChar(200)
+  result              CalibrationResult @default(PASS) @map("RESULT")
+  certificateNo       String?           @map("CERTIFICATE_NO") @db.VarChar(50)
+  measuredValues      String?           @map("MEASURED_VALUES") @db.VarChar(4000)
+  standardValues      String?           @map("STANDARD_VALUES") @db.VarChar(4000)
+  deviation           String?           @map("DEVIATION") @db.VarChar(2000)
+  uncertainty         String?           @map("UNCERTAINTY") @db.VarChar(500)
+  nextCalibrationDate DateTime?         @map("NEXT_CALIBRATION_DATE")
+  isOot               Boolean           @default(false) @map("IS_OOT")
+  ootAction           String?           @map("OOT_ACTION") @db.VarChar(2000)
+  affectedLots        String?           @map("AFFECTED_LOTS") @db.VarChar(4000)
+  remarks             String?           @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  equipment Equipment @relation(fields: [equipmentId], references: [equipmentId], onDelete: Cascade)
+
+  @@map("QMS_CALIBRATION")
+}
+
+/// 26. LOT 추적
+model LotTrace {
+  traceId          String    @id @default(uuid()) @map("TRACE_ID") @db.VarChar(50)
+  lotNo            String    @map("LOT_NO") @db.VarChar(50)
+  itemCode         String    @map("ITEM_CODE") @db.VarChar(50)
+  itemName         String?   @map("ITEM_NAME") @db.VarChar(200)
+  traceType        TraceType @map("TRACE_TYPE")
+  parentLotNo      String?   @map("PARENT_LOT_NO") @db.VarChar(50)
+  processCode      String?   @map("PROCESS_CODE") @db.VarChar(50)
+  processName      String?   @map("PROCESS_NAME") @db.VarChar(200)
+  equipmentId      String?   @map("EQUIPMENT_ID") @db.VarChar(50)
+  operatorId       String?   @map("OPERATOR_ID") @db.VarChar(50)
+  operatorName     String?   @map("OPERATOR_NAME") @db.VarChar(100)
+  productionDate   DateTime? @map("PRODUCTION_DATE")
+  productionLine   String?   @map("PRODUCTION_LINE") @db.VarChar(50)
+  supplierCode     String?   @map("SUPPLIER_CODE") @db.VarChar(50)
+  customerCode     String?   @map("CUSTOMER_CODE") @db.VarChar(50)
+  shipmentNo       String?   @map("SHIPMENT_NO") @db.VarChar(50)
+  shipmentDate     DateTime? @map("SHIPMENT_DATE")
+  qty              Int?      @map("QTY")
+  inspectionLotNo  String?   @map("INSPECTION_LOT_NO") @db.VarChar(50)
+  inspectionResult String?   @map("INSPECTION_RESULT") @db.VarChar(50)
+  remarks          String?   @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_LOT_TRACE")
+}
+
+/// 27. 고객 마스터
+model Customer {
+  customerCode String  @id @map("CUSTOMER_CODE") @db.VarChar(50)
+  customerName String  @map("CUSTOMER_NAME") @db.VarChar(200)
+  country      String? @map("COUNTRY") @db.VarChar(100)
+  address      String? @map("ADDRESS") @db.VarChar(500)
+  contactName  String? @map("CONTACT_NAME") @db.VarChar(100)
+  contactEmail String? @map("CONTACT_EMAIL") @db.VarChar(200)
+  contactPhone String? @map("CONTACT_PHONE") @db.VarChar(50)
+  isActive     Boolean @default(true) @map("IS_ACTIVE")
+  remarks      String? @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_CUSTOMER")
+}
+
+/// 28. 품목 마스터
+model Item {
+  itemCode      String  @id @map("ITEM_CODE") @db.VarChar(50)
+  itemName      String  @map("ITEM_NAME") @db.VarChar(200)
+  itemType      String? @map("ITEM_TYPE") @db.VarChar(50)
+  category      String? @map("CATEGORY") @db.VarChar(100)
+  unit          String? @map("UNIT") @db.VarChar(20)
+  specification String? @map("SPECIFICATION") @db.VarChar(500)
+  drawingNo     String? @map("DRAWING_NO") @db.VarChar(50)
+  isActive      Boolean @default(true) @map("IS_ACTIVE")
+  remarks       String? @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_ITEM")
+}
+
+/// 29. 공정 정보
+model ProcessInfo {
+  processCode String  @id @map("PROCESS_CODE") @db.VarChar(50)
+  processName String  @map("PROCESS_NAME") @db.VarChar(200)
+  processType String? @map("PROCESS_TYPE") @db.VarChar(50)
+  description String? @map("DESCRIPTION") @db.VarChar(2000)
+  sequenceNo  Int?    @map("SEQUENCE_NO")
+  isActive    Boolean @default(true) @map("IS_ACTIVE")
+  remarks     String? @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_PROCESS")
+}
+
+/// 30. 공통코드 (복합키)
+model CommonCode {
+  codeGroup   String  @map("CODE_GROUP") @db.VarChar(50)
+  codeValue   String  @map("CODE_VALUE") @db.VarChar(50)
+  codeName    String  @map("CODE_NAME") @db.VarChar(200)
+  codeNameEn  String? @map("CODE_NAME_EN") @db.VarChar(200)
+  description String? @map("DESCRIPTION") @db.VarChar(500)
+  sortOrder   Int?    @map("SORT_ORDER")
+  isActive    Boolean @default(true) @map("IS_ACTIVE")
+  parentGroup String? @map("PARENT_GROUP") @db.VarChar(50)
+  parentValue String? @map("PARENT_VALUE") @db.VarChar(50)
+  remarks     String? @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@id([codeGroup, codeValue])
+  @@map("QMS_COMMON_CODE")
+}
+
+/// 31. 협력사 평가
+model SupplierEvaluation {
+  evaluationId     String     @id @default(uuid()) @map("EVALUATION_ID") @db.VarChar(50)
+  supplierCode     String     @map("SUPPLIER_CODE") @db.VarChar(50)
+  supplierName     String     @map("SUPPLIER_NAME") @db.VarChar(200)
+  evaluationPeriod String     @map("EVALUATION_PERIOD") @db.VarChar(20)
+  evaluationDate   DateTime   @map("EVALUATION_DATE")
+  evaluator        String?    @map("EVALUATOR") @db.VarChar(100)
+  qualityScore     Decimal?   @map("QUALITY_SCORE") @db.Decimal(5, 2)
+  deliveryScore    Decimal?   @map("DELIVERY_SCORE") @db.Decimal(5, 2)
+  priceScore       Decimal?   @map("PRICE_SCORE") @db.Decimal(5, 2)
+  serviceScore     Decimal?   @map("SERVICE_SCORE") @db.Decimal(5, 2)
+  totalScore       Decimal?   @map("TOTAL_SCORE") @db.Decimal(5, 2)
+  grade            EvalGrade? @map("GRADE")
+  defectRate       Decimal?   @map("DEFECT_RATE") @db.Decimal(5, 2)
+  deliveryOnTime   Decimal?   @map("DELIVERY_ON_TIME") @db.Decimal(5, 2)
+  improvementPlan  String?    @map("IMPROVEMENT_PLAN") @db.VarChar(4000)
+  remarks          String?    @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_SUPPLIER_EVAL")
+}
+
+/// 32. SCAR (협력사 시정 조치 요구)
+model Scar {
+  scarId           String     @id @default(uuid()) @map("SCAR_ID") @db.VarChar(50)
+  scarNo           String     @unique @map("SCAR_NO") @db.VarChar(50)
+  supplierCode     String     @map("SUPPLIER_CODE") @db.VarChar(50)
+  supplierName     String     @map("SUPPLIER_NAME") @db.VarChar(200)
+  issueDate        DateTime   @map("ISSUE_DATE")
+  dueDate          DateTime   @map("DUE_DATE")
+  ncrNo            String?    @map("NCR_NO") @db.VarChar(50)
+  description      String     @map("DESCRIPTION") @db.VarChar(4000)
+  rootCause        String?    @map("ROOT_CAUSE") @db.VarChar(4000)
+  correctiveAction String?    @map("CORRECTIVE_ACTION") @db.VarChar(4000)
+  preventiveAction String?    @map("PREVENTIVE_ACTION") @db.VarChar(4000)
+  responseDate     DateTime?  @map("RESPONSE_DATE")
+  verificationDate DateTime?  @map("VERIFICATION_DATE")
+  verifiedBy       String?    @map("VERIFIED_BY") @db.VarChar(100)
+  status           ScarStatus @default(ISSUED) @map("STATUS")
+  remarks          String?    @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_SCAR")
+}
+
+/// 33. 직원 역량
+model EmployeeCompetency {
+  competencyId      String           @id @default(uuid()) @map("COMPETENCY_ID") @db.VarChar(50)
+  employeeId        String           @map("EMPLOYEE_ID") @db.VarChar(50)
+  employeeName      String           @map("EMPLOYEE_NAME") @db.VarChar(100)
+  department        String?          @map("DEPARTMENT") @db.VarChar(100)
+  position          String?          @map("POSITION") @db.VarChar(100)
+  competencyArea    String           @map("COMPETENCY_AREA") @db.VarChar(200)
+  currentLevel      CompetencyLevel  @default(BEGINNER) @map("CURRENT_LEVEL")
+  targetLevel       CompetencyLevel? @map("TARGET_LEVEL")
+  certificationName String?          @map("CERTIFICATION_NAME") @db.VarChar(200)
+  certificationDate DateTime?        @map("CERTIFICATION_DATE")
+  expiryDate        DateTime?        @map("EXPIRY_DATE")
+  assessmentDate    DateTime?        @map("ASSESSMENT_DATE")
+  assessedBy        String?          @map("ASSESSED_BY") @db.VarChar(100)
+  remarks           String?          @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_EMPLOYEE_COMPETENCY")
+}
+
+/// 34. 교육 기록
+model TrainingRecord {
+  trainingId        String         @id @default(uuid()) @map("TRAINING_ID") @db.VarChar(50)
+  trainingName      String         @map("TRAINING_NAME") @db.VarChar(200)
+  trainingType      String?        @map("TRAINING_TYPE") @db.VarChar(100)
+  description       String?        @map("DESCRIPTION") @db.VarChar(2000)
+  instructor        String?        @map("INSTRUCTOR") @db.VarChar(100)
+  department        String?        @map("DEPARTMENT") @db.VarChar(100)
+  plannedDate       DateTime?      @map("PLANNED_DATE")
+  actualDate        DateTime?      @map("ACTUAL_DATE")
+  durationHours     Decimal?       @map("DURATION_HOURS") @db.Decimal(5, 1)
+  attendeeCount     Int?           @map("ATTENDEE_COUNT")
+  attendees         String?        @map("ATTENDEES") @db.VarChar(4000)
+  status            TrainingStatus @default(PLANNED) @map("STATUS")
+  evaluationScore   Decimal?       @map("EVALUATION_SCORE") @db.Decimal(5, 2)
+  certificateIssued Boolean        @default(false) @map("CERTIFICATE_ISSUED")
+  remarks           String?        @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_TRAINING_RECORD")
+}
+
+/// 35. 변경 요청
+model ChangeRequest {
+  changeId         String       @id @default(uuid()) @map("CHANGE_ID") @db.VarChar(50)
+  changeNo         String       @unique @map("CHANGE_NO") @db.VarChar(50)
+  changeType       ChangeType   @map("CHANGE_TYPE")
+  title            String       @map("TITLE") @db.VarChar(500)
+  description      String       @map("DESCRIPTION") @db.VarChar(4000)
+  reason           String       @map("REASON") @db.VarChar(2000)
+  itemCode         String?      @map("ITEM_CODE") @db.VarChar(50)
+  itemName         String?      @map("ITEM_NAME") @db.VarChar(200)
+  requestedBy      String       @map("REQUESTED_BY") @db.VarChar(100)
+  requestDate      DateTime     @map("REQUEST_DATE")
+  reviewedBy       String?      @map("REVIEWED_BY") @db.VarChar(100)
+  reviewDate       DateTime?    @map("REVIEW_DATE")
+  approvedBy       String?      @map("APPROVED_BY") @db.VarChar(100)
+  approvedDate     DateTime?    @map("APPROVED_DATE")
+  implementedBy    String?      @map("IMPLEMENTED_BY") @db.VarChar(100)
+  implementedDate  DateTime?    @map("IMPLEMENTED_DATE")
+  status           ChangeStatus @default(DRAFT) @map("STATUS")
+  impactAssessment String?      @map("IMPACT_ASSESSMENT") @db.VarChar(4000)
+  riskAssessment   String?      @map("RISK_ASSESSMENT") @db.VarChar(4000)
+  validationResult String?      @map("VALIDATION_RESULT") @db.VarChar(2000)
+  remarks          String?      @map("REMARKS") @db.VarChar(2000)
+
+  createdAt DateTime  @default(now()) @map("CREATED_AT")
+  updatedAt DateTime  @updatedAt @map("UPDATED_AT")
+  deletedAt DateTime? @map("DELETED_AT")
+  createdBy String?   @map("CREATED_BY") @db.VarChar(100)
+  updatedBy String?   @map("UPDATED_BY") @db.VarChar(100)
+
+  @@map("QMS_CHANGE_REQUEST")
+}

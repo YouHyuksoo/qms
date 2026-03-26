@@ -1,0 +1,34 @@
+/**
+ * @file ncr.entity.ts
+ * @description NCR 관련 enum 정의
+ */
+
+export enum NcrStatus {
+  DRAFT = 'DRAFT',
+  OPEN = 'OPEN',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+  IN_PROGRESS = 'IN_PROGRESS',
+  DISPOSITION_DECIDED = 'DISPOSITION_DECIDED',
+  COMPLETED = 'COMPLETED',
+  CLOSED = 'CLOSED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum DefectType {
+  DIMENSIONAL = 'DIMENSIONAL',
+  VISUAL = 'VISUAL',
+  FUNCTIONAL = 'FUNCTIONAL',
+  MATERIAL = 'MATERIAL',
+  CONTAMINATION = 'CONTAMINATION',
+  MAJOR = 'MAJOR',
+  OTHER = 'OTHER',
+}
+
+export enum NcrSource {
+  INCOMING = 'INCOMING',
+  IN_PROCESS = 'IN_PROCESS',
+  FINAL = 'FINAL',
+  CUSTOMER = 'CUSTOMER',
+  FIELD = 'FIELD',
+  INSPECTION = 'INSPECTION',
+}

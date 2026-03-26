@@ -1,0 +1,22 @@
+/**
+ * @file apqp-phase.entity.ts
+ * @description APQP phase enum
+ */
+
+export enum ApqpPhaseType {
+  PLANNING = 'PLANNING',
+  PHASE1_PLANNING = 'PHASE1_PLANNING',
+  PHASE2_DESIGN = 'PHASE2_DESIGN',
+  PHASE3_PROCESS = 'PHASE3_PROCESS',
+  PHASE4_VALIDATION = 'PHASE4_VALIDATION',
+  PHASE5_PRODUCTION = 'PHASE5_PRODUCTION',
+}
+
+export enum ApqpPhaseStatus {
+  NOT_STARTED = 'NOT_STARTED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  ON_HOLD = 'ON_HOLD',
+}

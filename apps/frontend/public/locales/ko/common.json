@@ -1,0 +1,80 @@
+{
+  "app": {
+    "title": "QMS 품질경영시스템",
+    "description": "자동차 부품 제조사를 위한 통합 품질관리 플랫폼",
+    "start": "시작하기"
+  },
+  "landing": {
+    "badge": "자동차 부품 품질관리의 새로운 기준",
+    "heroTitle1": "품질을 설계하고",
+    "heroTitle2": "신뢰를 제조합니다",
+    "heroDesc": "IATF 16949 기반의 통합 품질경영시스템으로 수입검사부터 출하까지 전 공정의 품질을 실시간으로 관리하세요.",
+    "ctaPrimary": "대시보드 시작",
+    "ctaSecondary": "기능 둘러보기",
+    "statsDefect": "불량률 감소",
+    "statsResponse": "대응시간 단축",
+    "statsProcess": "공정 자동화",
+    "statsCompliance": "규격 준수율",
+    "featuresTitle": "품질관리의 모든 것, 하나의 플랫폼에서",
+    "featuresDesc": "자동차 부품 제조에 특화된 품질경영 모듈을 제공합니다",
+    "featureIqc": "수입검사 (IQC)",
+    "featureIqcDesc": "원자재·부품 입고 시 검사 기준에 따른 자동 판정과 로트 추적으로 불량 유입을 원천 차단합니다.",
+    "featureNcr": "부적합 관리 (NCR)",
+    "featureNcrDesc": "부적합 발생 즉시 기록하고, 원인 분석부터 시정 조치까지 체계적으로 추적·관리합니다.",
+    "featureCapa": "시정·예방 조치 (CAPA)",
+    "featureCapaDesc": "근본 원인 분석 기반의 시정 조치와 재발 방지를 위한 예방 조치를 통합 관리합니다.",
+    "featureApqp": "사전 품질계획 (APQP)",
+    "featureApqpDesc": "신규 제품 개발 단계부터 양산까지 5단계 품질계획을 체계적으로 수립·실행합니다.",
+    "featurePpap": "생산부품 승인 (PPAP)",
+    "featurePpapDesc": "고객사 요구 수준에 맞는 PPAP 제출 문서를 자동 생성하고 승인 이력을 관리합니다.",
+    "featureCert": "성적서 관리",
+    "featureCertDesc": "검사 데이터 기반으로 출하 성적서를 자동 생성하고 고객사별 양식을 관리합니다.",
+    "bottomTitle": "지금 바로 품질경영의 디지털 전환을 시작하세요",
+    "bottomDesc": "복잡한 설치 없이, 브라우저에서 바로 시작할 수 있습니다."
+  },
+  "common": {
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "수정",
+    "create": "등록",
+    "search": "검색",
+    "reset": "초기화",
+    "confirm": "확인",
+    "close": "닫기",
+    "back": "뒤로",
+    "next": "다음",
+    "loading": "로딩중...",
+    "error": "오류",
+    "success": "성공",
+    "warning": "경고",
+    "info": "정보"
+  },
+  "menu": {
+    "dashboard": "대시보드",
+    "inspection": "검사관리",
+    "ncr": "부적합 관리",
+    "certificate": "성적서 관리",
+    "apqp": "APQP",
+    "ppap": "PPAP",
+    "capa": "CAPA",
+    "settings": "설정"
+  },
+  "inspection": {
+    "iqc": {
+      "title": "수입검사",
+      "lotNo": "로트번호",
+      "inspectionDate": "검사일",
+      "judgment": {
+        "pass": "합격",
+        "fail": "불합격",
+        "hold": "보류"
+      }
+    }
+  },
+  "theme": {
+    "light": "라이트",
+    "dark": "다크",
+    "system": "시스템"
+  }
+}

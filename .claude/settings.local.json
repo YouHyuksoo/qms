@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(netstat -ano)",
+      "Bash(pnpm --filter backend exec tsc --noEmit)",
+      "Bash(pnpm --filter frontend exec tsc --noEmit)",
+      "Bash(ls C:/Project/qms/apps/frontend/src/app/\\\\\\(dashboard\\\\\\)/)",
+      "Bash(pnpm --filter backend add better-sqlite3)",
+      "Bash(pnpm --filter backend add -D @types/better-sqlite3)",
+      "Bash(pnpm approve-builds:*)",
+      "Bash(node -e \":*)",
+      "Bash(pnpm --filter backend exec npx prisma generate)",
+      "Bash(grep -rn \"^export enum\\\\|^export const.*{\" C:/Project/qms/apps/backend/src/modules/*/entities/*.entity.ts)",
+      "Bash(grep -r export.*PrismaClient C:/Project/qms/apps/backend/node_modules/.prisma/client/index.d.ts)",
+      "Bash(pnpm --filter backend add dotenv)",
+      "Bash(pnpm --filter backend add @prisma/adapter-pg pg)",
+      "Bash(for port:*)",
+      "Bash(do echo:*)",
+      "Bash(grep \":$port \")",
+      "Bash(done)",
+      "Bash(npx turbo:*)",
+      "Bash(npx next:*)"
+    ]
+  }
+}
