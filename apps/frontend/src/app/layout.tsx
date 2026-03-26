@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Noto_Sans_KR, Outfit } from 'next/font/google';
 import { Providers } from '@/providers';
 import '@/styles/globals.css';
@@ -27,6 +28,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        <Script id="spa-redirect" strategy="beforeInteractive">{`
+          (function(){
+            var redirect = sessionStorage.redirect;
+            delete sessionStorage.redirect;
+            if (redirect && redirect !== location.href) {
+              history.replaceState(null, '', redirect);
+            }
+          })();
+        `}</Script>
+      </head>
       <body className={`${notoSansKR.variable} ${outfit.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>
       </body>

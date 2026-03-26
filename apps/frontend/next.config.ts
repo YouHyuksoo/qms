@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
         output: 'export',
         basePath: '/qms',
         assetPrefix: '/qms/',
+        trailingSlash: true,
         images: { unoptimized: true },
       }
     : {
