@@ -1,16 +1,27 @@
 import type { NextConfig } from 'next';
 
+const isGithubPages = process.env.GITHUB_PAGES === 'true';
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@qms/shared'],
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'http://localhost:3005/api/v1/:path*',
-      },
-    ];
-  },
+  ...(isGithubPages
+    ? {
+        output: 'export',
+        basePath: '/qms',
+        assetPrefix: '/qms/',
+        images: { unoptimized: true },
+      }
+    : {
+        async rewrites() {
+          return [
+            {
+              source: '/api/:path*',
+              destination: 'http://localhost:3005/api/v1/:path*',
+            },
+          ];
+        },
+      }),
 };
 
 export default nextConfig;
